@@ -1,0 +1,9 @@
+menu "ESP Robotics"
+
+	config CYTRON_MDDS
+		bool "Enable support for the cytron mdds series motor driver"
+		help
+			if enabled, Support for the cytron mdds series motor driver
+			based on UART Mode.
+
+endmenu

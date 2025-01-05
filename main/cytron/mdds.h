@@ -6,7 +6,7 @@
 
 #pragma once
 
-#define MDDS_DRV_VERSION "1.2.1"
+#define MDDS_DRV_VERSION "1.3.0"
 
 /*
  * Default baud rate for mdds driver
@@ -68,7 +68,20 @@ typedef struct {
 typedef mdds_dev_t *mdds_handle_t;
 
 /*
- * Function: mdds_send_sig
+ * Function: mdds_write_packtized
+ * Type: esp_err_t (int)
+ * Input:
+ *     pmdds: Motor handle
+ *	   addr: address for the mdds
+ *     chan: Motor channel
+ *     dir: Motor direction
+ *     speed: Motor speed (reverse: 0, stop: 127: forward: 255)
+ * Return: ESP_OK on success
+ */
+esp_err_t mdds_write_packtized(mdds_handle_t pmdds, uint8_t addr, mdds_chan_t chan, uint8_t speed);
+
+/*
+ * Function: mdds_write_simplified
  * Type: esp_err_t (int)
  * Input:
  *     pmdds: Motor handle
@@ -77,7 +90,7 @@ typedef mdds_dev_t *mdds_handle_t;
  *     speed: Motor speed
  * Return: ESP_OK on success
  */
-esp_err_t mdds_write(mdds_handle_t pmdds, mdds_chan_t chan, mdds_drv_t dir, uint8_t speed);
+esp_err_t mdds_write_simplified(mdds_handle_t pmdds, mdds_chan_t chan, mdds_drv_t dir, uint8_t speed);
 
 /*
  * Function: mdds_init

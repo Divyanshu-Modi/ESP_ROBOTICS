@@ -9,7 +9,30 @@
 #include "mdds.h"
 #include "pr_log.h"
 
-esp_err_t mdds_write(mdds_handle_t pmot, mdds_chan_t chan, mdds_drv_t dir, uint8_t speed)
+esp_err_t mdds_write_packtized(mdds_handle_t pmot, uint8_t addr, mdds_chan_t chan, uint8_t speed)
+{
+	esp_err_t ret = ESP_OK;
+	uint8_t cmd[4] = { 0 };
+
+	if (!(pmot && pmot->is_drv_installed))
+		return ESP_ERR_INVALID_ARG;
+
+	if (!(chan >= CHAN_LEFT && chan < CHAN_MAX))
+		return ESP_FAIL;
+
+	cmd[0] = 0x55;
+	cmd[1] = (chan << 3) | addr;
+	cmd[2] = speed;
+	cmd[3] = cmd[0] | cmd[1] | cmd[2];
+
+	ret = uart_write_bytes(pmot->port, (const uint8_t*)&cmd, 4);
+	if (ret < 0)
+		pr_err("write failed!");
+
+	return ret;
+}
+
+esp_err_t mdds_write_simplified(mdds_handle_t pmot, mdds_chan_t chan, mdds_drv_t dir, uint8_t speed)
 {
 	esp_err_t ret = ESP_OK;
 	uint16_t cmd = 0;
@@ -17,10 +40,10 @@ esp_err_t mdds_write(mdds_handle_t pmot, mdds_chan_t chan, mdds_drv_t dir, uint8
 	if (!(pmot && pmot->is_drv_installed))
 		return ESP_ERR_INVALID_ARG;
 
-	if (!(chan >= MOT_CHAN_LEFT && chan < MOT_CHAN_MAX))
+	if (!(chan >= CHAN_LEFT && chan < CHAN_MAX))
 		return ESP_FAIL;
 
-	if (!(dir >= MOT_DRV_CW && dir < MOT_DRV_MAX))
+	if (!(dir >= DRV_CW && dir < DRV_MAX))
 		return ESP_FAIL;
 
 	speed &= 0x40; // Speed above 63 isn't allowed

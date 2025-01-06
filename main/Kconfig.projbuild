@@ -12,6 +12,11 @@ menu "ESP Robotics"
 			if enabled, Support for the cytron lsa 08 driver
 			will be enabled.
 
+	config ECONNECT_SPI
+		bool "Econnect API based on SPI communication protocol"
+		help
+			If enable, Econnect API based on SPI communication protocol will be enabled.
+
 	config ROTARY_ENCODER
 		bool "Enable support for the rotary encoders"
 		help

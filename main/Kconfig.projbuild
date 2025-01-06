@@ -12,4 +12,9 @@ menu "ESP Robotics"
 			if enabled, Support for the cytron lsa 08 driver
 			will be enabled.
 
+	config ROTARY_ENCODER
+		bool "Enable support for the rotary encoders"
+		help
+			if enabled, Support for the rotary encoders will be enabled.
+
 endmenu

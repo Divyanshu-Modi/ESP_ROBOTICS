@@ -14,4 +14,9 @@ if (CONFIG_CYTRON_LSA)
 	list(APPEND DIRS "cytron/")
 endif()
 
+if (CONFIG_ROTARY_ENCODER)
+	list(APPEND TSRCS "encoder/rotary_encoder.c")
+	list(APPEND DIRS "encoder/")
+endif()
+
 idf_component_register(SRCS ${TSRCS} INCLUDE_DIRS ${DIRS})

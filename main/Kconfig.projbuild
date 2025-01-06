@@ -6,4 +6,10 @@ menu "ESP Robotics"
 			if enabled, Support for the cytron mdds series motor driver
 			based on UART Mode.
 
+	config CYTRON_LSA
+		bool "Enable support for the cytron lsa 08 driver"
+		help
+			if enabled, Support for the cytron lsa 08 driver
+			will be enabled.
+
 endmenu

@@ -22,4 +22,16 @@ menu "ESP Robotics"
 		help
 			if enabled, Support for the rotary encoders will be enabled.
 
+	config PS_HID
+		bool "Enable support for the PS controller API based on HID host interface"
+		depends on SOC_BT_CLASSIC_SUPPORTED
+		select BT_ENABLED
+		select BT_CLASSIC_ENABLED
+		select BT_SPP_ENABLED
+		select BT_L2CAP_ENABLED
+		select BT_HID_ENABLED
+		select BT_HID_HOST_ENABLED
+		help
+			Enable support for the PS controller over hid API based on HID playstation.
+
 endmenu

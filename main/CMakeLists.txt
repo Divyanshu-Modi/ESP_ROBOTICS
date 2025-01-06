@@ -19,9 +19,14 @@ if (CONFIG_ECONNECT_SPI)
 	list(APPEND DIRS "econnect/")
 endif()
 
+if (CONFIG_PS_HID)
+	list(APPEND TSRCS "ps_hid/ps.c" "ps_hid/ps_ds4.c" "ps_hid/ps_ds.c")
+	list(APPEND DIRS "ps_hid/")
+endif()
+
 if (CONFIG_ROTARY_ENCODER)
 	list(APPEND TSRCS "encoder/rotary_encoder.c")
 	list(APPEND DIRS "encoder/")
 endif()
 
-idf_component_register(SRCS ${TSRCS} INCLUDE_DIRS ${DIRS})
+idf_component_register(SRCS ${TSRCS} INCLUDE_DIRS ${DIRS} REQUIRES driver bt nvs_flash)

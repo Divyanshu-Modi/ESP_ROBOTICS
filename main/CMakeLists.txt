@@ -19,6 +19,11 @@ if (CONFIG_ECONNECT_SPI)
 	list(APPEND DIRS "econnect/")
 endif()
 
+if (CONFIG_MPU6XXX)
+	list(APPEND TSRCS "mpu6xxx/mpu6xxx.c")
+	list(APPEND DIRS "mpu6xxx/")
+endif()
+
 if (CONFIG_PS_HID)
 	list(APPEND TSRCS "ps_hid/ps.c" "ps_hid/ps_ds4.c" "ps_hid/ps_ds.c")
 	list(APPEND DIRS "ps_hid/")

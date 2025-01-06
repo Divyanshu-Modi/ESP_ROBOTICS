@@ -22,6 +22,12 @@ menu "ESP Robotics"
 		help
 			if enabled, Support for the rotary encoders will be enabled.
 
+	config MPU6XXX
+		bool "Enable support for the MPU 6xxx series of IMU"
+		help
+			if enabled, support for the MPU 6xxx series of IMU will be enabled.
+			NOTE: Currently only mpu6886 is supported.
+
 	config PS_HID
 		bool "Enable support for the PS controller API based on HID host interface"
 		depends on SOC_BT_CLASSIC_SUPPORTED

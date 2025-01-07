@@ -23,9 +23,9 @@ esp_err_t mdds_write_packtized(mdds_handle_t pmot, uint8_t addr, mdds_chan_t cha
 	cmd[0] = 0x55;
 	cmd[1] = (chan << 3) | addr;
 	cmd[2] = speed;
-	cmd[3] = cmd[0] | cmd[1] | cmd[2];
+	cmd[3] = (0x55 + cmd[1] + speed);
 
-	ret = uart_write_bytes(pmot->port, (const uint8_t*)&cmd, 4);
+	ret = uart_write_bytes(pmot->port, (const uint8_t*)cmd, 4);
 	if (ret < 0)
 		pr_err("write failed!");
 
@@ -46,10 +46,9 @@ esp_err_t mdds_write_simplified(mdds_handle_t pmot, mdds_chan_t chan, mdds_drv_t
 	if (!(dir >= DRV_CW && dir < DRV_MAX))
 		return ESP_FAIL;
 
-	speed &= 0x40; // Speed above 63 isn't allowed
+	speed &= 0x3f; // Speed above 63 isn't allowed
 
 	cmd |= (chan ? 128 : 0) | (dir ? 64 : 0) | speed;
-
 	ret = uart_write_bytes(pmot->port, (const uint8_t*)&cmd, 1);
 	if (ret < 0)
 		pr_err("%d write failed", cmd);

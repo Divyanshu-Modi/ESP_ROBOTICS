@@ -49,7 +49,7 @@ typedef enum {
 typedef struct {
   uart_port_t port;
   uint8_t tx_pin;
-  uint16_t baud;
+  int baud;
 } mdds_cfg_t;
 
 /*

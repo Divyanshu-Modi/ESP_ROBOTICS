@@ -188,15 +188,20 @@ void ps_ouput_handler(void *pdata)
 		}
 
 		count = uxQueueMessagesWaiting(ps_hid_dev->work);
-		while (count) {
-			count--;
-			xQueueReceive(ps_hid_dev->work, &buf, 0);
+		if (count > 0) {
+			while (count) {
+				count--;
+				xQueueReceive(ps_hid_dev->work, &buf, 0);
+
+				if (ps_hid_dev->ops->output_handler)
+					ps_hid_dev->ops->output_handler(dev_mac, &buf);
+			}
+		} else {
+			xQueueReceive(ps_hid_dev->work, &buf, portMAX_DELAY);
 
 			if (ps_hid_dev->ops->output_handler)
 				ps_hid_dev->ops->output_handler(dev_mac, &buf);
 		}
-
-	    vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 }
 

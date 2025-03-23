@@ -78,15 +78,10 @@ void ds4_get_report(struct hidh_get_rpt_evt_param *buf)
 void ds4_output_handler(esp_bd_addr_t mac, ps_hid_output_t *buf)
 {
 	struct ds4_output_report report = { 0 };
-	static bool interval_set = false;
 
 	report.id = DS4_OUTPUT_REPORT_BT;
-	report.hw_ctrl = DS4_OUTPUT_HWCTL_HID;
-
-	if (!interval_set) {
-		report.hw_ctrl |= DS4_BT_POLL_INTERVAL_MS;
-		interval_set = true;
-	}
+	// TODO: Linux sends this only once but, has issues on esp fix onces cause is found
+	report.hw_ctrl = DS4_OUTPUT_HWCTL_HID | DS4_BT_POLL_INTERVAL_MS;
 
 	if (buf->update_rumble) {
 		report.valid_flag0 |= DS4_OUTPUT_VALID_FLAG0_MOTOR;

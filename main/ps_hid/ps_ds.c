@@ -149,10 +149,8 @@ void ds_get_data(ps_hid_input_t *dbuf)
 	uint8_t battery_data = 0;
 	uint8_t hat_val = 0;
 
-	if (report == NULL) {
-		dbuf = NULL;
+	if (report == NULL)
 		return;
-	}
 
 	/* Analog Sticks */
 	ldata.lx = report->x;
@@ -160,7 +158,7 @@ void ds_get_data(ps_hid_input_t *dbuf)
 	ldata.rx = report->rx;
 	ldata.ry = report->ry;
 
-	/* Ananlog shoulder buttons */
+	/* Analog shoulder buttons */
 	ldata.l2_ana = report->z;
 	ldata.r2_ana = report->rz;
 

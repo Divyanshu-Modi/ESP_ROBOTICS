@@ -37,7 +37,7 @@ esp_err_t rotary_enc_init(const enc_cfg_t *enc_cfg, enc_handle_t *handle)
 		return ESP_ERR_NO_MEM;
 	}
 
-	lenc_cfg.high_limit = enc_cfg->h_lim;;
+	lenc_cfg.high_limit = enc_cfg->h_lim;
 	lenc_cfg.low_limit = enc_cfg->l_lim;
 	lenc_cfg.flags.accum_count = 1;
 

@@ -49,7 +49,7 @@ typedef struct {
 /*
  * struct lsa_dev_t:
  *    cfg: lsa configuration struct
- *    is_drv_installed: Variable to inidicate a succesfull driver installation
+ *    is_drv_installed: Variable to indicate a successful driver installation
  */
 typedef struct {
 	uint8_t en;

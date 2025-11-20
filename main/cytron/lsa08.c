@@ -58,7 +58,6 @@ void lsa_read_bytes(lsa_handle_t lsa, uint8_t *lbuf, size_t size)
 	buf = (uint8_t *)heap_caps_calloc(size, sizeof(uint8_t), MALLOC_CAP_DEFAULT);
 	if (buf == NULL) {
 		pr_err("memory allocation failed!");
-		lbuf = NULL;
 		return;
 	}
 

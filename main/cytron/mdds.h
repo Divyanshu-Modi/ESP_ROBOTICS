@@ -55,7 +55,7 @@ typedef struct {
 /*
  * struct mdds_dev_t:
  *    cfg: Motor configuration struct
- *    is_drv_installed: Variable to inidicate a succesfull driver installation
+ *    is_drv_installed: Variable to indicate a successful driver installation
  */
 typedef struct {
   uart_port_t port;

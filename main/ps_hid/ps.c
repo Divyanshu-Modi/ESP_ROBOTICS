@@ -179,7 +179,7 @@ void ps_ouput_handler(void *pdata)
 	while (1) {
 		/*
 		 * The device may be disconnected even
-		 * after a succesful initial pairing.
+		 * after a successful initial pairing.
 		 * So, make sure it's handled properly.
 		 */
 		if (!ps_hid_is_dev_connected()) {

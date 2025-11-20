@@ -199,7 +199,7 @@ static inline esp_err_t mpu6xxx_probe(mpu_dev_t dev)
 		pr_info(pr_fmt, "MPU6886 Detected!");
 		break;
 	default:
-		pr_warn(pr_fmt, "Unknow chip probe abort! regval: %d", regval);
+		pr_warn(pr_fmt, "Unknown chip probe abort! regval: %d", regval);
 		return ESP_OK;
 	}
 
@@ -405,7 +405,7 @@ esp_err_t mpu6xxx_exit(mpu_handle_t handle)
 
 	ret = i2c_del_master_bus(handle->bus);
 	if (ret)
-		pr_err(pr_fmt, "Error occured during bus removal!");
+		pr_err(pr_fmt, "Error occurred during bus removal!");
 
 	heap_caps_free(handle);
 

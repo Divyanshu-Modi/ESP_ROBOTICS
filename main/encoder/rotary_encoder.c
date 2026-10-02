@@ -4,6 +4,7 @@
 #define pr_fmt "ROT_ENC"
 
 #include "esp_heap_caps.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "rotary_encoder.h"
@@ -14,9 +15,60 @@ esp_err_t rotary_enc_get_count(enc_handle_t handle, int *val)
 	return pcnt_unit_get_count(handle->unit, val);
 }
 
+esp_err_t rotary_enc_get_velocity(enc_handle_t handle, float *velocity)
+{
+	int count;
+	int64_t timestamp;
+	int64_t delta_time;
+	esp_err_t ret;
+
+	/*
+	 * Calculate signed velocity in counts per second from the change
+	 * in encoder count over the elapsed time between measurements.
+	 */
+	if (handle == NULL || velocity == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	ret = pcnt_unit_get_count(handle->unit, &count);
+	if (ret != ESP_OK)
+		return ret;
+
+	timestamp = esp_timer_get_time();
+	delta_time = timestamp - handle->last_timestamp;
+
+	if (delta_time <= 0) {
+		*velocity = 0.0f;
+		return ESP_OK;
+	}
+
+	/*
+	 * Scale the count delta by 1,000,000 because the elapsed time
+	 * returned by esp_timer_get_time() is measured in microseconds.
+	 */
+	*velocity = ((float)(count - handle->last_count) * 1000000.0f) /
+		    (float)delta_time;
+
+	handle->last_count = count;
+	handle->last_timestamp = timestamp;
+
+	return ESP_OK;
+}
+
 esp_err_t rotary_enc_clear_count(enc_handle_t handle)
 {
-	return pcnt_unit_clear_count(handle->unit);
+	esp_err_t ret;
+
+	if (handle == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	ret = pcnt_unit_clear_count(handle->unit);
+	if (ret != ESP_OK)
+		return ret;
+
+	handle->last_count = 0;
+	handle->last_timestamp = esp_timer_get_time();
+
+	return ESP_OK;
 }
 
 esp_err_t rotary_enc_init(const enc_cfg_t *enc_cfg, enc_handle_t *handle)
@@ -109,6 +161,13 @@ esp_err_t rotary_enc_init(const enc_cfg_t *enc_cfg, enc_handle_t *handle)
 		goto del_chan_2;
 
 	pr_debug("Unit cleared successfully!");
+
+	/*
+	 * Initialize the velocity measurement baseline before starting
+	 * the PCNT unit.
+	 */
+	enc_dev->last_count = 0;
+	enc_dev->last_timestamp = esp_timer_get_time();
 
 	ret = pcnt_unit_start(enc_dev->unit);
 	if (ret)

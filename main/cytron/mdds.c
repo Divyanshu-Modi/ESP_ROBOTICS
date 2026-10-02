@@ -56,6 +56,59 @@ esp_err_t mdds_write_simplified(mdds_handle_t pmot, mdds_chan_t chan, mdds_drv_t
 	return ret;
 }
 
+esp_err_t mdds_set_differential_drive(mdds_handle_t pmot,
+				       float linear, float angular)
+{
+	float left;
+	float right;
+	float max_value;
+	uint8_t left_speed;
+	uint8_t right_speed;
+	mdds_drv_t left_dir;
+	mdds_drv_t right_dir;
+	esp_err_t ret;
+
+	if (!(pmot && pmot->is_drv_installed))
+		return ESP_ERR_INVALID_ARG;
+
+	if (linear < -1.0f || linear > 1.0f ||
+	    angular < -1.0f || angular > 1.0f)
+		return ESP_ERR_INVALID_ARG;
+
+	left = linear - angular;
+	right = linear + angular;
+
+	max_value = 1.0f;
+
+	if (left > max_value)
+		max_value = left;
+	if (left < -max_value)
+		max_value = -left;
+	if (right > max_value)
+		max_value = right;
+	if (right < -max_value)
+		max_value = -right;
+
+	if (max_value > 1.0f) {
+		left /= max_value;
+		right /= max_value;
+	}
+
+	left_dir = (left < 0.0f) ? DRV_CCW : DRV_CW;
+	right_dir = (right < 0.0f) ? DRV_CCW : DRV_CW;
+
+	left_speed = (uint8_t)((left < 0.0f ? -left : left) * 63.0f);
+	right_speed = (uint8_t)((right < 0.0f ? -right : right) * 63.0f);
+
+	ret = mdds_write_simplified(pmot, CHAN_LEFT, left_dir, left_speed);
+	if (ret < 0)
+		return ret;
+
+	ret = mdds_write_simplified(pmot, CHAN_RIGHT, right_dir, right_speed);
+
+	return ret;
+}
+
 esp_err_t mdds_init(const mdds_cfg_t *mdds_cfg, mdds_handle_t *handle)
 {
 	bool probe = false;

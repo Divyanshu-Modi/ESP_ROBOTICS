@@ -188,3 +188,21 @@ esp_err_t ps_hid_init(esp_bd_addr_t mac);
  * 		- mac: bluetooth mac address of the controller
  */
 void ps_hid_exit(esp_bd_addr_t mac);
+
+/*
+ * function: ps_hid_set_stick_deadzone
+ * - inputs:
+ *      - deadzone: radial stick deadzone, range 0.0 to 0.95
+ *
+ * - return: ESP_OK on success, ESP_ERR_INVALID_ARG on invalid value
+ */
+esp_err_t ps_hid_set_stick_deadzone(float deadzone);
+
+/*
+ * function: ps_hid_set_stick_curve
+ * - inputs:
+ *      - exponent: stick response-curve exponent
+ *
+ * - return: ESP_OK on success, ESP_ERR_INVALID_ARG on invalid value
+ */
+esp_err_t ps_hid_set_stick_curve(float exponent);

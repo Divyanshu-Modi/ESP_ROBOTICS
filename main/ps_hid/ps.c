@@ -12,6 +12,7 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "string.h"
+#include "math.h"
 
 #include "ps.h"
 
@@ -23,6 +24,10 @@ typedef struct {
 } ps_hid_ctx_t;
 
 ps_hid_ctx_t *ps_hid_dev = NULL;
+
+/* Analog stick input shaping configuration */
+static float ps_stick_deadzone = 0.0f;
+static float ps_stick_curve = 1.0f;
 
 void __ps_hid_cb(esp_hidh_cb_event_t event, esp_hidh_cb_param_t *param)
 {
@@ -149,14 +154,99 @@ bool ps_hid_is_dev_connected(void)
 	return (ps_hid_dev->status == ESP_HIDH_CONN_STATE_CONNECTED);
 }
 
+static uint8_t ps_hid_shape_stick_pair(uint8_t raw_x, uint8_t raw_y,
+                                       float deadzone, float curve,
+                                       uint8_t *out_y)
+{
+	float x = ((float)raw_x - 127.5f) / 127.5f;
+	float y = ((float)raw_y - 127.5f) / 127.5f;
+
+	float magnitude = sqrtf((x * x) + (y * y));
+
+	if (magnitude <= deadzone) {
+		*out_y = 128;
+		return 128;
+	}
+
+	if (magnitude > 1.0f)
+		magnitude = 1.0f;
+
+	float shaped_magnitude =
+		(magnitude - deadzone) / (1.0f - deadzone);
+
+	shaped_magnitude = powf(shaped_magnitude, curve);
+
+	if (magnitude > 0.0f) {
+		float scale = shaped_magnitude / magnitude;
+		x *= scale;
+		y *= scale;
+	}
+
+	x = (x * 127.5f) + 127.5f;
+	y = (y * 127.5f) + 127.5f;
+
+	if (x < 0.0f)
+		x = 0.0f;
+	else if (x > 255.0f)
+		x = 255.0f;
+
+	if (y < 0.0f)
+		y = 0.0f;
+	else if (y > 255.0f)
+		y = 255.0f;
+
+	*out_y = (uint8_t)(y + 0.5f);
+	return (uint8_t)(x + 0.5f);
+}
+
 ps_hid_input_t ps_hid_get_data(void)
 {
 	ps_hid_input_t rpt = { 0 };
 
-	if (ps_hid_is_dev_connected() && ps_hid_dev->ops->get_data)
+	if (ps_hid_is_dev_connected() && ps_hid_dev->ops->get_data) {
 		ps_hid_dev->ops->get_data(&rpt);
 
+		uint8_t shaped_ly;
+		uint8_t shaped_ry;
+
+		rpt.lx = ps_hid_shape_stick_pair(
+			rpt.lx, rpt.ly,
+			ps_stick_deadzone,
+			ps_stick_curve,
+			&shaped_ly);
+
+		rpt.ly = shaped_ly;
+
+		rpt.rx = ps_hid_shape_stick_pair(
+			rpt.rx, rpt.ry,
+			ps_stick_deadzone,
+			ps_stick_curve,
+			&shaped_ry);
+
+		rpt.ry = shaped_ry;
+	}
+
 	return rpt;
+}
+
+esp_err_t ps_hid_set_stick_deadzone(float deadzone)
+{
+	if (deadzone < 0.0f || deadzone >= 0.95f)
+		return ESP_ERR_INVALID_ARG;
+
+	ps_stick_deadzone = deadzone;
+
+	return ESP_OK;
+}
+
+esp_err_t ps_hid_set_stick_curve(float exponent)
+{
+	if (exponent <= 0.0f)
+		return ESP_ERR_INVALID_ARG;
+
+	ps_stick_curve = exponent;
+
+	return ESP_OK;
 }
 
 void ps_ouput_handler(void *pdata)

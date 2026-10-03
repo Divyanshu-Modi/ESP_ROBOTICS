@@ -101,8 +101,13 @@ static inline esp_err_t espi_parent_probe(const espi_cfg_t *espi_cfg, espi_spi_t
 		dev = ESPI_MAX_CHILDS;
 	}
 
+/*
+* Initialize each configured chip-select pin.
+* Use the loop index here; dev stores the number of devices,
+* not the index of the current device.
+*/
 	for (i = 0; i < dev; i++) {
-		ret |= gpio_init(espi_cfg->sel[dev], GPIO_MODE_INPUT_OUTPUT, 1);
+		ret |= gpio_init(espi_cfg->sel[i], GPIO_MODE_INPUT_OUTPUT, 1);
 		if (ret) {
 			pr_err("failed to set sel pin!");
 			goto gpio_err;
@@ -149,7 +154,11 @@ static inline esp_err_t espi_parent_exit(espi_handle_t handle)
 	esp_err_t ret = ESP_OK;
 	uint8_t i = 0;
 
-	for (i = 0; i < handle->num; i--) {
+/*
+* Remove every registered SPI device during teardown.
+* Increment the index to process all devices in sequence.
+*/
+	for (i = 0; i < handle->num; i++) {
 		ret = spi_bus_remove_device(handle->spi[i]);
 		if (ret) {
 			pr_err("failed to remove device with ID[%d]", i);
@@ -163,7 +172,10 @@ static inline esp_err_t espi_parent_exit(espi_handle_t handle)
 		return ESP_FAIL;
 	}
 
-	for (i = 0; i < handle->num; i--) {
+/*
+* Reset every chip-select GPIO after releasing the SPI devices.
+*/
+	for (i = 0; i < handle->num; i++) {
 		ret = gpio_reset_pin(handle->sel[i]);
 		if (ret)
 			return ESP_FAIL;

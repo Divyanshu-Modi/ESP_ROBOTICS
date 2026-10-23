@@ -31,6 +31,11 @@ typedef struct {
  */
 typedef struct {
   int h_lim, l_lim;
+
+  /* Previous encoder count and timestamp used for velocity calculation. */
+  int last_count;
+  int64_t last_timestamp;
+
   pcnt_unit_handle_t unit;
   pcnt_channel_handle_t chan[2];
 } enc_dev_t;
@@ -68,6 +73,24 @@ esp_err_t rotary_enc_deinit(enc_handle_t handle);
  * Return: ESP_OK on success, ESP_FAIL on failure
  */
 esp_err_t rotary_enc_get_count(enc_handle_t handle, int *val);
+
+/*
+ * Function: rotary_enc_get_velocity
+ * Type: esp_err_t
+ * Input:
+ *     handle: encoder handle
+ *     velocity: pointer to store the encoder velocity
+ * Return: ESP_OK on success, ESP_ERR_INVALID_ARG for invalid arguments,
+ *         or the error returned by the PCNT driver
+ *
+ * Description:
+ *     Calculates the encoder velocity from the change in encoder count
+ *     over the elapsed time between consecutive calls.
+ *
+ *     The returned velocity is signed and expressed in counts per second.
+ *     Positive and negative values indicate the direction of rotation.
+ */
+esp_err_t rotary_enc_get_velocity(enc_handle_t handle, float *velocity);
 
 /*
  * Function: rotary_enc_clear_count

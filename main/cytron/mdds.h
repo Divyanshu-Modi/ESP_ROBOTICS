@@ -93,6 +93,26 @@ esp_err_t mdds_write_packtized(mdds_handle_t pmdds, uint8_t addr, mdds_chan_t ch
 esp_err_t mdds_write_simplified(mdds_handle_t pmdds, mdds_chan_t chan, mdds_drv_t dir, uint8_t speed);
 
 /*
+ * Function: mdds_set_differential_drive
+ * Type: esp_err_t (int)
+ * Input:
+ *     pmdds: Motor handle
+ *     linear: Forward/reverse command (-1.0 to 1.0)
+ *     angular: Turning command (-1.0 to 1.0)
+ * Return: ESP_OK on success, ESP_ERR_INVALID_ARG for invalid parameters,
+ *         or the error returned by the motor driver
+ *
+ * Description:
+ *     Converts linear and angular commands into left and right motor
+ *     commands for a differential-drive robot.
+ *
+ *     The resulting motor commands are normalized and mapped to the
+ *     MDDS simplified command range of 0 to 63.
+ */
+esp_err_t mdds_set_differential_drive(mdds_handle_t pmdds,
+				       float linear, float angular);
+
+/*
  * Function: mdds_init
  * Type: esp_err_t (int)
  * Input:

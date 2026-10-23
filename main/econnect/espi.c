@@ -381,7 +381,7 @@ esp_err_t espi_init(const espi_cfg_t *espi_cfg, espi_handle_t *handle)
 {
 	esp_err_t ret = ESP_OK;
 	espi_context_t *ctx = NULL;
-	espi_ops_t *ops = NULL;
+	espi_ops_t *ops;
 
 	if (espi_cfg == NULL)
 		return ESP_ERR_INVALID_ARG;
@@ -397,13 +397,11 @@ esp_err_t espi_init(const espi_cfg_t *espi_cfg, espi_handle_t *handle)
 		return ESP_ERR_NO_MEM;
 	}
 
-	ops = (espi_ops_t *)heap_caps_malloc(sizeof(espi_ops_t), MALLOC_CAP_DEFAULT);
-	if (ops == NULL) {
-		pr_err("Memory allocation failed for internal buf");
-		heap_caps_free(ctx);
-		return ESP_ERR_NO_MEM;
-	}
-
+	/*
+	 * Select the static operation table for the configured ESPI device.
+	 * The operation tables are statically allocated, so no heap allocation
+	 * is required for ops.
+	 */
 	if (espi_cfg->dev == ESPI_DEV_PARENT)
 		ops = &espi_parent_ops;
 	else
@@ -427,9 +425,13 @@ esp_err_t espi_init(const espi_cfg_t *espi_cfg, espi_handle_t *handle)
 	return ESP_OK;
 
 init_err:
+	/*
+	 * ops points to a static operation table and is not heap allocated.
+	 * Only the context allocated by espi_init() must be released here.
+	 */
 	vSemaphoreDelete(ctx->espi.mutex);
-	heap_caps_free(ops);
 	heap_caps_free(ctx);
+
 	return ret;
 }
 
@@ -440,8 +442,11 @@ esp_err_t espi_deinit(espi_handle_t handle)
 
 	ops.exit(handle);
 
+	/*
+	 * ops is a local stack copy of the operation table and must not be
+	 * passed to heap_caps_free(). Only the heap-allocated context is freed.
+	 */
 	vSemaphoreDelete(ctx->espi.mutex);
-	heap_caps_free(&ops);
 	heap_caps_free(ctx);
 
 	return ESP_OK;

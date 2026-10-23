@@ -296,22 +296,20 @@ esp_err_t ps_hid_init(esp_bd_addr_t mac)
 		return ret;
 	}
 
+	/*
+	 * Allocate the HID context once. The operation table is selected
+	 * from the static DS4/DS5 operation tables during device detection.
+	 */
 	ps_hid_dev = (ps_hid_ctx_t *)heap_caps_calloc(1, sizeof(ps_hid_ctx_t), MALLOC_CAP_DEFAULT);
 	if (ps_hid_dev == NULL) {
 		pr_err("failed to alloc ops!");
 		goto host_exit;
 	}
 
-	ps_hid_dev->ops = (ps_ops_t *)heap_caps_calloc(1, sizeof(ps_ops_t), MALLOC_CAP_DEFAULT);
-	if (ps_hid_dev->ops == NULL) {
-		pr_err("failed to alloc ops!");
-		goto mem_exit;
-	}
-
 	ps_hid_dev->work = xQueueCreate(10, sizeof(ps_hid_output_t));
 	if (!ps_hid_dev->work) {
 		pr_err("failed to initialise work!");
-		goto ops_exit;
+		goto mem_exit;
 	}
 
 	xTaskCreate(ps_ouput_handler, "ps_hid_worker", 4096, (uint8_t *)mac, 1, &ps_hid_dev->worker);
@@ -336,8 +334,6 @@ worker_exit:
 	vTaskDelete(ps_hid_dev->worker);
 work_exit:
 	vQueueDelete(ps_hid_dev->work);
-ops_exit:
-	heap_caps_free(ps_hid_dev->ops);
 mem_exit:
 	heap_caps_free(ps_hid_dev);
 host_exit:
@@ -353,6 +349,12 @@ void ps_hid_exit(esp_bd_addr_t mac)
 		vTaskDelete(ps_hid_dev->worker);
 		vQueueDelete(ps_hid_dev->work);
 		heap_caps_free(ps_hid_dev);
+
+		/*
+		 * Clear the global handle after freeing it so later accesses
+		 * cannot use a dangling pointer.
+		 */
+		ps_hid_dev = NULL;
 	}
 
 	esp_bt_hid_host_deinit();

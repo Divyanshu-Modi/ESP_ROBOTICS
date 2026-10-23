@@ -175,7 +175,8 @@ void mpu6xxx_get_temp_data(mpu_dev_t dev, float *temp)
 	}
 	lbuf |= regval;
 
-	*temp = (lbuf + 25) / 326.8;
+	/* Convert raw MPU6886 temperature to degrees Celsius. */
+	*temp = (lbuf / 326.8) + 25;
 }
 
 static inline esp_err_t mpu6xxx_probe(mpu_dev_t dev)
